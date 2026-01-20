@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Island Portfolio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: VT323 (Pixel Style) & Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        ocean: '#4ec0e9',
+                        oceanDark: '#3a9bc0',
+                        sand: '#f4e4bc',
+                        sandShadow: '#dcc08b',
+                        grass: '#9ad578',
+                        grassShadow: '#76b058',
+                        wood: '#a06e48',
+                        woodDark: '#7d5233',
+                        paper: '#fffdf5'
+                    },
+                    fontFamily: {
+                        pixel: ['"VT323"', 'monospace'],
+                        sans: ['"Noto Sans KR"', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'float-delayed': 'float 3s ease-in-out 1.5s infinite',
+                        'wave': 'wave 4s linear infinite',
+                        'cloud': 'cloud 60s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        wave: {
+                            '0%': { backgroundPosition: '0 0' },
+                            '100%': { backgroundPosition: '100px 0' },
+                        },
+                        cloud: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100vw)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            image-rendering: pixelated; /* 픽셀 아트 느낌 강조 */
+            overflow: hidden; /* 전체 스크롤 방지 (내부 모달만 스크롤) */
+        }
+        
+        .pixel-borders {
+            box-shadow: 
+                -4px 0 0 0 rgba(0,0,0,0.15),
+                4px 0 0 0 rgba(0,0,0,0.15),
+                0 -4px 0 0 rgba(0,0,0,0.15),
+                0 4px 0 0 rgba(0,0,0,0.15);
+        }
+
+        /* Isometric/3D effect helpers */
+        .iso-object {
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        .iso-object:hover {
+            transform: scale(1.1) translateY(-5px);
+            filter: brightness(1.1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #a06e48; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7d5233; 
+        }
+
+        /* Tooltip */
+        .tooltip {
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+        .group:hover .tooltip {
+            opacity: 1;
+        }
+        
+        /* Ocean Pattern */
+        .ocean-bg {
+            background-color: #4ec0e9;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255,255,255,0.2) 2px, transparent 2.5px),
+                radial-gradient(circle at 90% 80%, rgba(255,255,255,0.2) 2px, transparent 2.5px);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="bg-ocean h-screen w-screen relative font-pixel text-gray-800">
+
+    <!-- Background Elements -->
+    <div class="absolute inset-0 ocean-bg animate-wave opacity-80"></div>
+    
+    <!-- Clouds -->
+    <div class="absolute top-10 left-0 text-white opacity-60 text-6xl animate-cloud" style="animation-duration: 45s;"><i class="fas fa-cloud"></i></div>
+    <div class="absolute top-24 left-0 text-white opacity-40 text-4xl animate-cloud" style="animation-duration: 30s; animation-delay: 10s;"><i class="fas fa-cloud"></i></div>
+    <div class="absolute top-5 left-0 text-white opacity-50 text-5xl animate-cloud" style="animation-duration: 55s; animation-delay: 5s;"><i class="fas fa-cloud"></i></div>
+
+    <!-- Main Container -->
+    <div class="relative w-full h-full flex items-center justify-center overflow-hidden">
+        
+        <!-- The Island Container -->
+        <div class="relative w-[340px] h-[340px] md:w-[500px] md:h-[500px] animate-float select-none">
+            
+            <!-- Island Base (Sand & Grass) -->
+            <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 w-[90%] h-[60%] bg-sand rounded-[50px] shadow-[0_10px_0_rgba(220,192,139,1)] z-10 border-4 border-sandShadow"></div>
+            <div class="absolute bottom-[90px] md:bottom-[120px] left-1/2 transform -translate-x-1/2 w-[80%] h-[50%] bg-grass rounded-[40px] shadow-[0_8px_0_rgba(118,176,88,1)] z-20 border-4 border-grassShadow"></div>
+
+            <!-- Interactive Objects -->
+
+            <!-- 1. The House (My Works) -->
+            <div onclick="openModal('works')" class="group absolute top-[15%] left-[20%] z-30 iso-object flex flex-col items-center">
+                <div class="relative">
+                    <!-- Roof -->
+                    <div class="w-0 h-0 border-l-[30px] border-r-[30px] border-b-[40px] border-l-transparent border-r-transparent border-b-red-400 drop-shadow-md"></div>
+                    <!-- Body -->
+                    <div class="w-[60px] h-[50px] bg-yellow-100 border-2 border-yellow-200 shadow-lg flex justify-center items-end">
+                        <div class="w-[20px] h-[30px] bg-woodDark rounded-t-lg"></div>
+                    </div>
+                </div>
+                <!-- Label -->
+                <div class="tooltip mt-2 bg-white px-3 py-1 rounded-full border-2 border-black text-sm font-bold shadow-md">
+                    My Works 🏠
+                </div>
+            </div>
+
+            <!-- 2. The Palm Tree (About Me) -->
+            <div onclick="openModal('about')" class="group absolute top-[25%] right-[20%] z-30 iso-object flex flex-col items-center">
+                <div class="relative text-6xl md:text-8xl drop-shadow-lg">
+                    🌴
+                </div>
+                 <!-- Label -->
+                 <div class="tooltip -mt-2 bg-white px-3 py-1 rounded-full border-2 border-black text-sm font-bold shadow-md">
+                    About Me 🥥
+                </div>
+            </div>
+
+            <!-- 3. Mailbox/Bottle (Guestbook) -->
+            <div onclick="openModal('guestbook')" class="group absolute bottom-[20%] left-[30%] z-30 iso-object flex flex-col items-center">
+                <div class="text-4xl md:text-5xl drop-shadow-md animate-bounce">
+                    📮
+                </div>
+                <!-- Label -->
+                <div class="tooltip mt-1 bg-white px-3 py-1 rounded-full border-2 border-black text-sm font-bold shadow-md">
+                    Guestbook ✍️
+                </div>
+            </div>
+
+            <!-- 4. Signpost (Contact) -->
+            <div onclick="openModal('contact')" class="group absolute bottom-[25%] right-[25%] z-30 iso-object flex flex-col items-center">
+                <div class="flex flex-col items-center">
+                    <div class="bg-wood text-white text-[10px] md:text-xs px-2 py-1 border border-woodDark shadow-sm transform -rotate-6">@Social</div>
+                    <div class="w-1 h-8 bg-woodDark"></div>
+                </div>
+                 <!-- Label -->
+                 <div class="tooltip mt-1 bg-white px-3 py-1 rounded-full border-2 border-black text-sm font-bold shadow-md">
+                    Contact 🔗
+                </div>
+            </div>
+
+            <!-- Decorative Elements -->
+            <div class="absolute bottom-[15%] right-[10%] text-2xl z-20 opacity-80">🦀</div>
+            <div class="absolute top-[30%] left-[10%] text-2xl z-20 opacity-80">🐚</div>
+            
+        </div>
+        
+        <!-- Instruction Text -->
+        <div class="absolute bottom-8 text-white text-center animate-pulse">
+            <p class="text-xl md:text-2xl drop-shadow-md">🏝️ 섬 위의 아이콘을 클릭해보세요!</p>
+        </div>
+    </div>
+
+
+    <!-- MODALS (Hidden by default) -->
+    
+    <!-- 1. My Works Modal -->
+    <div id="modal-works" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-paper w-full max-w-2xl h-[80vh] rounded-lg border-4 border-wood shadow-2xl flex flex-col relative pixel-borders">
+            <!-- Header -->
+            <div class="bg-ocean text-white p-4 flex justify-between items-center border-b-4 border-oceanDark">
+                <h2 class="text-3xl font-bold">📂 My Projects</h2>
+                <button onclick="closeModal('works')" class="hover:text-red-200 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto font-sans">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Project 1 -->
+                    <div class="bg-white p-4 rounded border-2 border-gray-200 shadow hover:shadow-lg transition">
+                        <div class="h-32 bg-blue-100 rounded mb-3 flex items-center justify-center text-4xl">📱</div>
+                        <h3 class="text-xl font-bold mb-2">모바일 앱 디자인</h3>
+                        <p class="text-gray-600 text-sm mb-3">사용자 경험을 최우선으로 한 깔끔한 UI/UX 디자인 프로젝트입니다.</p>
+                        <div class="flex gap-2 text-xs">
+                            <span class="bg-gray-100 px-2 py-1 rounded">Figma</span>
+                            <span class="bg-gray-100 px-2 py-1 rounded">React Native</span>
+                        </div>
+                    </div>
+                    <!-- Project 2 -->
+                    <div class="bg-white p-4 rounded border-2 border-gray-200 shadow hover:shadow-lg transition">
+                        <div class="h-32 bg-green-100 rounded mb-3 flex items-center justify-center text-4xl">🛍️</div>
+                        <h3 class="text-xl font-bold mb-2">E-커머스 웹사이트</h3>
+                        <p class="text-gray-600 text-sm mb-3">반응형 웹 디자인과 결제 시스템이 연동된 쇼핑몰 데모입니다.</p>
+                        <div class="flex gap-2 text-xs">
+                            <span class="bg-gray-100 px-2 py-1 rounded">Vue.js</span>
+                            <span class="bg-gray-100 px-2 py-1 rounded">Node.js</span>
+                        </div>
+                    </div>
+                    <!-- Project 3 -->
+                    <div class="bg-white p-4 rounded border-2 border-gray-200 shadow hover:shadow-lg transition">
+                        <div class="h-32 bg-purple-100 rounded mb-3 flex items-center justify-center text-4xl">🎨</div>
+                        <h3 class="text-xl font-bold mb-2">3D 아트 갤러리</h3>
+                        <p class="text-gray-600 text-sm mb-3">Three.js를 활용한 인터랙티브 웹 전시회 프로젝트입니다.</p>
+                        <div class="flex gap-2 text-xs">
+                            <span class="bg-gray-100 px-2 py-1 rounded">Three.js</span>
+                            <span class="bg-gray-100 px-2 py-1 rounded">WebGL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. About Me Modal -->
+    <div id="modal-about" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-paper w-full max-w-lg rounded-lg border-4 border-wood shadow-2xl flex flex-col relative pixel-borders">
+            <div class="bg-grass text-white p-4 flex justify-between items-center border-b-4 border-grassShadow">
+                <h2 class="text-3xl font-bold">🌴 About Me</h2>
+                <button onclick="closeModal('about')" class="hover:text-red-200 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-8 text-center font-sans">
+                <div class="w-24 h-24 bg-yellow-200 rounded-full mx-auto mb-4 border-4 border-yellow-400 overflow-hidden flex items-center justify-center">
+                    <span class="text-4xl">🧑‍💻</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-1">김데브 (Kim Dev)</h3>
+                <p class="text-oceanDark font-bold mb-4">Frontend Developer</p>
+                <p class="text-gray-600 leading-relaxed mb-6">
+                    안녕하세요! 코드로 세상을 그리는 개발자입니다.<br>
+                    사용자에게 즐거움을 주는 인터랙티브한 웹을 만드는 것을 좋아합니다.
+                    항상 새로운 기술을 배우고 도전하는 것을 즐깁니다.
+                </p>
+                <div class="flex justify-center gap-4 text-2xl text-wood">
+                    <a href="#" class="hover:text-ocean transition"><i class="fab fa-github"></i></a>
+                    <a href="#" class="hover:text-blue-500 transition"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="hover:text-pink-500 transition"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Guestbook Modal -->
+    <div id="modal-guestbook" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-paper w-full max-w-md h-[70vh] rounded-lg border-4 border-wood shadow-2xl flex flex-col relative pixel-borders">
+            <div class="bg-wood text-white p-4 flex justify-between items-center border-b-4 border-woodDark">
+                <h2 class="text-3xl font-bold">📮 방명록</h2>
+                <button onclick="closeModal('guestbook')" class="hover:text-red-200 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 bg-sand/30 font-sans" id="guestbook-messages">
+                <!-- Messages will be injected here -->
+                <div class="text-center text-gray-400 mt-10">첫 번째 방문자가 되어주세요!</div>
+            </div>
+
+            <form onsubmit="addMessage(event)" class="p-4 bg-white border-t-2 border-gray-200">
+                <div class="flex gap-2 mb-2">
+                    <input id="guest-name" type="text" placeholder="이름" class="w-1/3 border-2 border-gray-300 rounded px-2 py-1 focus:border-ocean outline-none font-sans" required maxlength="10">
+                    <input id="guest-msg" type="text" placeholder="메시지를 남겨주세요!" class="w-2/3 border-2 border-gray-300 rounded px-2 py-1 focus:border-ocean outline-none font-sans" required>
+                </div>
+                <button type="submit" class="w-full bg-ocean hover:bg-oceanDark text-white font-bold py-2 rounded shadow border-b-4 border-oceanDark active:border-b-0 active:translate-y-1 transition-all">
+                    보내기
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. Contact Modal (Simple Toast style) -->
+    <div id="modal-contact" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-white rounded-lg p-8 text-center shadow-xl border-4 border-wood max-w-xs">
+            <h3 class="text-xl font-bold mb-4">Contact Info</h3>
+            <p class="mb-2">📧 email@example.com</p>
+            <p class="mb-4">📞 010-1234-5678</p>
+            <button onclick="closeModal('contact')" class="bg-gray-200 px-4 py-2 rounded hover:bg-gray-300">닫기</button>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script>
+        // Modal Logic
+        function openModal(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            if (modal) {
+                modal.classList.remove('hidden');
+                // Animation for opening
+                const content = modal.firstElementChild;
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(`modal-${id}`);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        // Close on clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('fixed')) {
+                event.target.classList.add('hidden');
+            }
+        }
+
+        // Guestbook Logic with LocalStorage
+        const STORAGE_KEY = 'island_guestbook_data';
+        
+        function loadMessages() {
+            const container = document.getElementById('guestbook-messages');
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            
+            if (data.length === 0) {
+                container.innerHTML = `<div class="text-center text-gray-500 mt-10 italic">아직 메시지가 없습니다.<br>첫 글을 남겨보세요! 🏝️</div>`;
+                return;
+            }
+
+            container.innerHTML = data.map(msg => `
+                <div class="bg-white p-3 rounded-lg shadow-sm mb-3 border border-gray-100 animate-[fadeIn_0.3s_ease-out]">
+                    <div class="flex justify-between items-baseline mb-1">
+                        <span class="font-bold text-oceanDark">${escapeHtml(msg.name)}</span>
+                        <span class="text-xs text-gray-400">${msg.date}</span>
+                    </div>
+                    <p class="text-gray-700 text-sm break-words">${escapeHtml(msg.text)}</p>
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function addMessage(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('guest-name');
+            const msgInput = document.getElementById('guest-msg');
+            
+            const name = nameInput.value.trim();
+            const text = msgInput.value.trim();
+            
+            if (!name || !text) return;
+
+            const newMessage = {
+                name,
+                text,
+                date: new Date().toLocaleDateString()
+            };
+
+            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            data.push(newMessage);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
+            nameInput.value = '';
+            msgInput.value = '';
+            
+            loadMessages();
+        }
+
+        // Security helper
+        function escapeHtml(text) {
+            if (!text) return text;
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', loadMessages);
+
+    </script>
+</body>
+</html>
