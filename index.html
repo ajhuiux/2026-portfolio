@@ -189,11 +189,22 @@
             <div class="absolute bottom-[15%] right-[10%] text-2xl z-20 opacity-80">🦀</div>
             <div class="absolute top-[30%] left-[10%] text-2xl z-20 opacity-80">🐚</div>
             
+            <!-- 5. Login/Auth (Key/Door Icon) -->
+            <div onclick="openModal('auth')" class="group absolute top-[40%] left-[45%] z-30 iso-object flex flex-col items-center" id="auth-island-object">
+                <div class="text-4xl md:text-5xl drop-shadow-lg">
+                    🔑
+                </div>
+                 <!-- Label -->
+                 <div class="tooltip mt-1 bg-white px-3 py-1 rounded-full border-2 border-black text-sm font-bold shadow-md">
+                    로그인
+                </div>
+            </div>
+            
         </div>
         
         <!-- Instruction Text -->
         <div class="absolute bottom-8 text-white text-center animate-pulse">
-            <p class="text-xl md:text-2xl drop-shadow-md">🏝️ 섬 위의 아이콘을 클릭해보세요!</p>
+            <p class="text-xl md:text-2xl drop-shadow-md">🏝️ Welcome to my island! Click the icons!</p>
         </div>
     </div>
 
@@ -308,8 +319,73 @@
         </div>
     </div>
 
+    <!-- 5. Auth Modal (Login/Signup/Logout) -->
+    <div id="modal-auth" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center backdrop-blur-sm p-4">
+        <div class="bg-paper w-full max-w-md rounded-lg border-4 border-ocean shadow-2xl flex flex-col relative pixel-borders">
+            <div class="bg-ocean text-white p-4 flex justify-between items-center border-b-4 border-oceanDark">
+                <h2 class="text-3xl font-bold" id="auth-modal-title">로그인</h2>
+                <button onclick="closeModal('auth')" class="hover:text-red-200 text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="p-6 font-sans">
+                <!-- Login Form -->
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="mb-4">
+                        <label for="login-email" class="block text-gray-700 text-sm font-bold mb-2">이메일</label>
+                        <input type="email" id="login-email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="이메일" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="login-password" class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
+                        <input type="password" id="login-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" placeholder="******************" required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="bg-ocean hover:bg-oceanDark text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-all" id="login-button">
+                            로그인
+                        </button>
+                        <a href="#" class="inline-block align-baseline font-bold text-sm text-ocean hover:text-oceanDark" onclick="toggleAuthMode()">
+                            회원가입
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Signup Form -->
+                <form id="signup-form" onsubmit="handleSignup(event)" class="hidden">
+                    <div class="mb-4">
+                        <label for="signup-email" class="block text-gray-700 text-sm font-bold mb-2">이메일</label>
+                        <input type="email" id="signup-email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="이메일" required>
+                    </div>
+                    <div class="mb-6">
+                        <label for="signup-password" class="block text-gray-700 text-sm font-bold mb-2">비밀번호</label>
+                        <input type="password" id="signup-password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" placeholder="******************" required>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <button type="submit" class="bg-grass hover:bg-grassShadow text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-all">
+                            회원가입
+                        </button>
+                        <a href="#" class="inline-block align-baseline font-bold text-sm text-grass hover:text-grassShadow" onclick="toggleAuthMode()">
+                            로그인
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Auth Status (Logged in view) -->
+                <div id="auth-status" class="hidden text-center mt-4">
+                    <p class="text-gray-700 mb-2">현재 <span id="user-email" class="font-bold"></span> 님으로 로그인되어 있습니다.</p>
+                    <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-all">
+                        로그아웃
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Script -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const SUPABASE_URL = 'https://dopvzbmggnvcaesymhik.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_TifCP5G1WTDBsKZuAm028g_ajrg4kEg';
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
         // Modal Logic
         function openModal(id) {
             const modal = document.getElementById(`modal-${id}`);
@@ -336,12 +412,133 @@
             }
         }
 
-        // Guestbook Logic with LocalStorage
-        const STORAGE_KEY = 'island_guestbook_data';
-        
-        function loadMessages() {
+        // Auth Logic
+        let currentAuthMode = 'login'; // 'login' or 'signup'
+
+        function toggleAuthMode() {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const authStatus = document.getElementById('auth-status');
+            const authModalTitle = document.getElementById('auth-modal-title');
+
+            if (currentAuthMode === 'login') {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                authStatus.classList.add('hidden');
+                authModalTitle.textContent = '회원가입';
+                currentAuthMode = 'signup';
+            } else {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                authStatus.classList.add('hidden');
+                authModalTitle.textContent = '로그인';
+                currentAuthMode = 'login';
+            }
+        }
+
+        async function handleSignup(event) {
+            event.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                alert(`회원가입 오류: ${error.message}`);
+            } else {
+                alert('회원가입 이메일이 발송되었습니다. 이메일을 확인하여 인증해주세요.');
+                toggleAuthMode(); // Switch back to login form
+            }
+        }
+
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                alert(`로그인 오류: ${error.message}`);
+            } else {
+                alert('로그인 성공!');
+                updateAuthUI(data.user);
+                closeModal('auth');
+            }
+        }
+
+        async function handleLogout() {
+            const { error } = await supabase.auth.signOut();
+
+            if (error) {
+                alert(`로그아웃 오류: ${error.message}`);
+            } else {
+                alert('로그아웃 되었습니다.');
+                updateAuthUI(null);
+                closeModal('auth');
+            }
+        }
+
+        function updateAuthUI(user) {
+            const authIslandObject = document.getElementById('auth-island-object');
+            const authStatus = document.getElementById('auth-status');
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const userEmailSpan = document.getElementById('user-email');
+
+            // Update the main island icon and tooltip
+            const authIslandTooltip = authIslandObject.querySelector('.tooltip');
+            const authIslandIcon = authIslandObject.querySelector('.drop-shadow-lg');
+
+            if (user) {
+                authIslandTooltip.textContent = '로그아웃';
+                authIslandIcon.textContent = '🚪'; // Door icon for logout
+                loginForm.classList.add('hidden');
+                signupForm.classList.add('hidden');
+                authStatus.classList.remove('hidden');
+                userEmailSpan.textContent = user.email;
+            } else {
+                authIslandTooltip.textContent = '로그인';
+                authIslandIcon.textContent = '🔑'; // Key icon for login
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                authStatus.classList.add('hidden');
+                userEmailSpan.textContent = '';
+                currentAuthMode = 'login'; // Reset auth mode
+            }
+            updateGuestbookUI(user); // Update guestbook UI based on auth state
+        }
+
+        // Supabase Auth Listener
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                updateAuthUI(session.user);
+            } else {
+                updateAuthUI(null);
+            }
+        });
+
+        // Guestbook Logic with Supabase
+        async function loadMessages() {
             const container = document.getElementById('guestbook-messages');
-            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+            container.innerHTML = `<div class="text-center text-gray-500 mt-10 italic">메시지를 불러오는 중...</div>`;
+
+            const { data, error } = await supabase
+                .from('guestbook')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error('방명록 메시지 불러오기 오류:', error);
+                container.innerHTML = `<div class="text-center text-red-500 mt-10 italic">메시지를 불러오는 데 실패했습니다.</div>`;
+                return;
+            }
             
             if (data.length === 0) {
                 container.innerHTML = `<div class="text-center text-gray-500 mt-10 italic">아직 메시지가 없습니다.<br>첫 글을 남겨보세요! 🏝️</div>`;
@@ -352,9 +549,9 @@
                 <div class="bg-white p-3 rounded-lg shadow-sm mb-3 border border-gray-100 animate-[fadeIn_0.3s_ease-out]">
                     <div class="flex justify-between items-baseline mb-1">
                         <span class="font-bold text-oceanDark">${escapeHtml(msg.name)}</span>
-                        <span class="text-xs text-gray-400">${msg.date}</span>
+                        <span class="text-xs text-gray-400">${new Date(msg.created_at).toLocaleDateString()}</span>
                     </div>
-                    <p class="text-gray-700 text-sm break-words">${escapeHtml(msg.text)}</p>
+                    <p class="text-gray-700 text-sm break-words">${escapeHtml(msg.message)}</p>
                 </div>
             `).join('');
             
@@ -362,31 +559,61 @@
             container.scrollTop = container.scrollHeight;
         }
 
-        function addMessage(e) {
+        async function addMessage(e) {
             e.preventDefault();
             const nameInput = document.getElementById('guest-name');
             const msgInput = document.getElementById('guest-msg');
             
             const name = nameInput.value.trim();
-            const text = msgInput.value.trim();
+            const message = msgInput.value.trim();
             
-            if (!name || !text) return;
+            const user = await supabase.auth.getUser();
+            if (!user.data.user) {
+                alert('메시지를 남기려면 로그인해야 합니다.');
+                return;
+            }
 
-            const newMessage = {
-                name,
-                text,
-                date: new Date().toLocaleDateString()
-            };
+            if (!name || !message) return;
 
-            const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-            data.push(newMessage);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            const { error } = await supabase
+                .from('guestbook')
+                .insert([
+                    { name: name, message: message }
+                ]);
 
-            nameInput.value = '';
-            msgInput.value = '';
-            
-            loadMessages();
+            if (error) {
+                alert(`메시지 전송 오류: ${error.message}`);
+            } else {
+                msgInput.value = '';
+                loadMessages();
+            }
         }
+
+        function updateGuestbookUI(user) {
+            const guestNameInput = document.getElementById('guest-name');
+            const guestMsgInput = document.getElementById('guest-msg');
+            const guestbookSubmitButton = document.querySelector('#modal-guestbook form button[type="submit"]');
+
+            if (user) {
+                guestNameInput.value = user.email;
+                guestNameInput.setAttribute('readonly', 'true');
+                guestNameInput.classList.add('bg-gray-100');
+                guestMsgInput.removeAttribute('disabled');
+                guestbookSubmitButton.removeAttribute('disabled');
+                guestbookSubmitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                guestbookSubmitButton.classList.add('bg-ocean', 'hover:bg-oceanDark');
+            } else {
+                guestNameInput.value = '';
+                guestNameInput.removeAttribute('readonly');
+                guestNameInput.classList.remove('bg-gray-100');
+                guestMsgInput.setAttribute('disabled', 'true');
+                guestbookSubmitButton.setAttribute('disabled', 'true');
+                guestbookSubmitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                guestbookSubmitButton.classList.remove('bg-ocean', 'hover:bg-oceanDark');
+            }
+        }
+
+
 
         // Security helper
         function escapeHtml(text) {
@@ -400,7 +627,14 @@
         }
 
         // Initial Load
-        document.addEventListener('DOMContentLoaded', loadMessages);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMessages();
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                const user = session?.user || null;
+                updateAuthUI(user);
+                updateGuestbookUI(user); // Also update guestbook UI on initial load
+            });
+        });
 
     </script>
 </body>
