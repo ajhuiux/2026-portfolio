@@ -1,0 +1,16 @@
+# Dependencies
+/node_modules
+
+# Supabase
+/supabase
+
+# Build and temp files
+.DS_Store
+*.log
+.cache
+.tmp
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
